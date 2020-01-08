@@ -1,4 +1,4 @@
-pragma solidity ^0.6.1;
+pragma solidity ^0.5.16;
 
 /**
  * que queremos hacer aqui:
@@ -80,6 +80,12 @@ contract Credenciales {
         
     }
     
+    function RawMensaje(address token, address buffer, address _to, uint256 _value, uint256 _fee, uint256 _nonce) public pure returns (bytes memory rawmsaj) {
+        
+        rawmsaj = bytes(abi.encodePacked(token,buffer,_to,_value,_fee,_nonce));
+        
+    }
+    
     /**
      * Las anteriores funciones ejecutarion los calculos a la perfeccion
      * el problema que persiste es con:
@@ -101,6 +107,8 @@ contract Credenciales {
      * 
      *          web3.eth.abi.encodeParameters(['address','address','address','uint256','uint256','uint256'], ['0xdb25f211ab05b1c97d595516f45794528a807ad8','0x001c356c0be5dd6c91ca24ef04d9e10081510682','0xa879ce660b0a41567fe33b1e329e2e9ad2b697ba','100','0','0'])
      * 
+     *          web3.utils.soliditySha3('0xdb25f211ab05b1c97d595516f45794528a807ad8','0x001c356c0be5dd6c91ca24ef04d9e10081510682','0xa879ce660b0a41567fe33b1e329e2e9ad2b697ba','100','0','0')
+     * 
      * otra extraña opcion: decodeParameters
      * 
      *          web3.eth.abi.decodeParameters(['address','address','address','uint256','uint256','uint256'],'0x000000000000000000000000db25f211ab05b1c97d595516f45794528a807ad8000000000000000000000000001c356c0be5dd6c91ca24ef04d9e10081510682000000000000000000000000a879ce660b0a41567fe33b1e329e2e9ad2b697ba000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
@@ -111,29 +119,13 @@ contract Credenciales {
      * 
      *          web3.eth.accounts.sign(web3.eth.abi.decodeParameters(['address','address','address','uint256','uint256','uint256'],'0x000000000000000000000000db25f211ab05b1c97d595516f45794528a807ad8000000000000000000000000001c356c0be5dd6c91ca24ef04d9e10081510682000000000000000000000000a879ce660b0a41567fe33b1e329e2e9ad2b697ba000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'),'0xc2019357e91342a4411f715bf155c2e5f990424ae9a018f6dd8851ac473d678a')
      * 
-     * No obstante, el message hash esta resultando en un numero totalmente diferente.
-     * 
-     * quiza
-     * 
-     *              web3.utils.soliditySha3('0xdb25f211ab05b1c97d595516f45794528a807ad8001c356c0be5dd6c91ca24ef04d9e10081510682a879ce660b0a41567fe33b1e329e2e9ad2b697ba000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
-     * 
-     * mucho me temo que el error pudiera estar aqui:
-     * 
-     * primero hay que calcular:
-     * 
-     *          web3.eth.abi.encodeParameters(['bytes20','bytes20','bytes20','uint256','uint256','uint256'], ['0xdb25f211ab05b1c97d595516f45794528a807ad8','0x001c356c0be5dd6c91ca24ef04d9e10081510682','0xa879ce660b0a41567fe33b1e329e2e9ad2b697ba','100','0','0'])
-     * 
-     * luego hay que decodificar:
-     * 
-     *          web3.eth.abi.decodeParameters(['bytes20','bytes20','bytes20','uint256','uint256','uint256'],'0x<rellenar aqui el codificado>')
-     * 
-     * finalmente se calcula la firma con la llave privada de prueba:
-     * 
-     *          web3.eth.accounts.sign(web3.eth.abi.decodeParameters(['bytes20','bytes20','bytes20','uint256','uint256','uint256'],'0x<rellenar aqui el codificado>'),'0xc2019357e91342a4411f715bf155c2e5f990424ae9a018f6dd8851ac473d678a')
+     *          web3.eth.accounts.sign(web3.utils.soliditySha3('0xdb25f211ab05b1c97d595516f45794528a807ad8','0x001c356c0be5dd6c91ca24ef04d9e10081510682','0xa879ce660b0a41567fe33b1e329e2e9ad2b697ba','100','0','0'),'0xc2019357e91342a4411f715bf155c2e5f990424ae9a018f6dd8851ac473d678a')
      * 
      * Y con los resultados v, r, y s que se obtengan, ejecutar la función "Verificar" a ver si por casualidad obtenemos la address:
      *
      *          0x2d60B75ccD96863cc66E4867CAEB86Bc5BBF1AD8
+     * 
+     * pero el resultado fue: 0x47634fB3836b4509996a0380f93Dceb74F6AF54D
      * 
      */
      
